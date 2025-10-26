@@ -11,5 +11,52 @@ $conn = new mysqli($servername, $username, $password, $database);
 if ($conn->connect_error) {
     die("❌ Connection failed: " . $conn->connect_error);
 }
-// echo "✅ Connected successfully";
+
+// Set charset to utf8
+$conn->set_charset("utf8");
+
+// Function to execute SQL queries safely
+function executeQuery($sql, $params = []) {
+    global $conn;
+    
+    if (empty($params)) {
+        $result = $conn->query($sql);
+        if (!$result) {
+            die("Query failed: " . $conn->error);
+        }
+        return $result;
+    } else {
+        $stmt = $conn->prepare($sql);
+        if (!$stmt) {
+            die("Prepare failed: " . $conn->error);
+        }
+        
+        $types = str_repeat('s', count($params));
+        $stmt->bind_param($types, ...$params);
+        
+        if (!$stmt->execute()) {
+            die("Execute failed: " . $stmt->error);
+        }
+        
+        $result = $stmt->get_result();
+        $stmt->close();
+        return $result;
+    }
+}
+
+// Function to sanitize input
+function sanitizeInput($data) {
+    global $conn;
+    return $conn->real_escape_string(trim($data));
+}
+
+// Function to format currency
+function formatCurrency($amount) {
+    return '₱' . number_format($amount, 2);
+}
+
+// Function to format date
+function formatDate($date) {
+    return date('M j, Y', strtotime($date));
+}
 ?>
