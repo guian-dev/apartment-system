@@ -189,16 +189,20 @@
                 <div class="stats-grid">
                     <?php
                     // Get total units count
-                    $totalUnits = $conn->query("SELECT COUNT(*) as count FROM units")->fetch_assoc()['count'];
+                    $totalUnitsResult = $conn->query("SELECT COUNT(*) as count FROM units");
+                    $totalUnits = $totalUnitsResult ? $totalUnitsResult->fetch_assoc()['count'] ?? 0 : 0;
                     
                     // Get occupied units count
-                    $occupiedUnits = $conn->query("SELECT COUNT(*) as count FROM units WHERE status = 'occupied'")->fetch_assoc()['count'];
+                    $occupiedUnitsResult = $conn->query("SELECT COUNT(*) as count FROM units WHERE status = 'occupied'");
+                    $occupiedUnits = $occupiedUnitsResult ? $occupiedUnitsResult->fetch_assoc()['count'] ?? 0 : 0;
                     
                     // Get monthly revenue
-                    $monthlyRevenue = $conn->query("SELECT SUM(amount) as total FROM payments WHERE MONTH(payment_date) = MONTH(CURRENT_DATE()) AND YEAR(payment_date) = YEAR(CURRENT_DATE()) AND status = 'paid'")->fetch_assoc()['total'] ?? 0;
+                    $monthlyRevenueResult = $conn->query("SELECT SUM(amount) as total FROM payments WHERE MONTH(payment_date) = MONTH(CURRENT_DATE()) AND YEAR(payment_date) = YEAR(CURRENT_DATE()) AND status = 'paid'");
+                    $monthlyRevenue = $monthlyRevenueResult ? $monthlyRevenueResult->fetch_assoc()['total'] ?? 0 : 0;
                     
                     // Get pending maintenance requests
-                    $pendingRequests = $conn->query("SELECT COUNT(*) as count FROM maintenance_requests WHERE status = 'pending'")->fetch_assoc()['count'];
+                    $pendingRequestsResult = $conn->query("SELECT COUNT(*) as count FROM maintenance_requests WHERE status = 'pending'");
+                    $pendingRequests = $pendingRequestsResult ? $pendingRequestsResult->fetch_assoc()['count'] ?? 0 : 0;
                     
                     // Calculate occupancy percentage
                     $occupancyRate = $totalUnits > 0 ? round(($occupiedUnits / $totalUnits) * 100, 1) : 0;

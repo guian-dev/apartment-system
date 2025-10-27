@@ -377,7 +377,7 @@
                     <span>Staff</span>
                 </a>
                 <a href="renters.php" class="nav-item">
-                    <i data-lucide="user" width="20" height="20"></i>
+                    <i data-lucide="users" width="20" height="20"></i>
                     <span>Renters</span>
                 </a>
                 <a href="tenants.php" class="nav-item">
@@ -450,10 +450,17 @@
                 <div class="units-stats">
                     <?php
                     // Get counts for each status
-                    $allCount = $conn->query("SELECT COUNT(*) as count FROM units")->fetch_assoc()['count'];
-                    $occupiedCount = $conn->query("SELECT COUNT(*) as count FROM units WHERE status = 'occupied'")->fetch_assoc()['count'];
-                    $availableCount = $conn->query("SELECT COUNT(*) as count FROM units WHERE status = 'available'")->fetch_assoc()['count'];
-                    $maintenanceCount = $conn->query("SELECT COUNT(*) as count FROM units WHERE status = 'maintenance'")->fetch_assoc()['count'];
+                    $allCountResult = $conn->query("SELECT COUNT(*) as count FROM units");
+    $allCount = $allCountResult ? $allCountResult->fetch_assoc()['count'] ?? 0 : 0;
+    
+    $occupiedCountResult = $conn->query("SELECT COUNT(*) as count FROM units WHERE status = 'occupied'");
+    $occupiedCount = $occupiedCountResult ? $occupiedCountResult->fetch_assoc()['count'] ?? 0 : 0;
+    
+    $availableCountResult = $conn->query("SELECT COUNT(*) as count FROM units WHERE status = 'available'");
+    $availableCount = $availableCountResult ? $availableCountResult->fetch_assoc()['count'] ?? 0 : 0;
+    
+    $maintenanceCountResult = $conn->query("SELECT COUNT(*) as count FROM units WHERE status = 'maintenance'");
+    $maintenanceCount = $maintenanceCountResult ? $maintenanceCountResult->fetch_assoc()['count'] ?? 0 : 0;
                     ?>
                     <div class="stat-mini">
                         <div class="value"><?php echo $allCount; ?></div>

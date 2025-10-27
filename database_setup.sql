@@ -103,10 +103,10 @@ CREATE TABLE IF NOT EXISTS reports (
 
 -- Insert sample data
 INSERT INTO staff (name, position, email, phone, status) VALUES
-('John Smith', 'Property Manager', 'john.smith@kagayanview.com', '+63 912 345 6789', 'active'),
+('John Smith', 'Property Manager', 'john.smith2@kagayanview.com', '+63 912 345 6789', 'active'),
 ('Maria Garcia', 'Maintenance Supervisor', 'maria.garcia@kagayanview.com', '+63 923 456 7890', 'active'),
 ('Pedro Santos', 'Security Guard', 'pedro.santos@kagayanview.com', '+63 934 567 8901', 'active'),
-('Ana Reyes', 'Administrative Assistant', 'ana.reyes@kagayanview.com', '+63 945 678 9012', 'active');
+('Ana Lopez', 'Administrative Assistant', 'ana.lopez@kagayanview.com', '+63 945 678 9012', 'active');
 
 INSERT INTO units (unit_number, floor, bedrooms, bathrooms, area_sqm, monthly_rent, status, description) VALUES
 ('101', 1, 1, 1, 28.5, 6000.00, 'available', 'Studio unit with basic amenities'),

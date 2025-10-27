@@ -477,8 +477,37 @@
                     <span>Staff</span>
                 </a>
                 <a href="renters.php" class="nav-item">
-                    <i data-lucide="user" width="20" height="20"></i>
+                    <i data-lucide="users" width="20" height="20"></i>
                     <span>Renters</span>
+                </a>
+                <a href="tenants.php" class="nav-item">
+                    <i data-lucide="users" width="20" height="20"></i>
+                    <span>Tenants</span>
+                </a>
+                <a href="units.php" class="nav-item">
+                    <i data-lucide="building-2" width="20" height="20"></i>
+                    <span>Units</span>
+                </a>
+                <a href="payments.php" class="nav-item active">
+                    <i data-lucide="dollar-sign" width="20" height="20"></i>
+                    <span>Payments</span>
+                </a>
+                <a href="reports.php" class="nav-item">
+                    <i data-lucide="file-text" width="20" height="20"></i>
+                    <span>Reports</span>
+                </a>
+            </nav>
+
+            <div class="sidebar-footer">
+                <a href="https://guiancarlosbuhawe-diaht.wordpress.com" target="_blank" class="nav-item">
+                    <i data-lucide="home" width="20" height="20"></i>
+                    <span></span>
+                </a>
+                <a href="logout.php" class="nav-item">
+                    <i data-lucide="log-out" width="20" height="20"></i>
+                    <span>Logout</span>
+                </a>
+            </div>
                 </a>
                 <a href="tenants.php" class="nav-item">
                     <i data-lucide="users" width="20" height="20"></i>
@@ -550,10 +579,17 @@
                 <div class="payment-summary">
                     <?php
                     // Get payment statistics
-                    $totalRevenue = $conn->query("SELECT SUM(amount) as total FROM payments WHERE status = 'paid'")->fetch_assoc()['total'] ?? 0;
-                    $monthlyRevenue = $conn->query("SELECT SUM(amount) as total FROM payments WHERE MONTH(payment_date) = MONTH(CURRENT_DATE()) AND YEAR(payment_date) = YEAR(CURRENT_DATE()) AND status = 'paid'")->fetch_assoc()['total'] ?? 0;
-                    $pendingPayments = $conn->query("SELECT COUNT(*) as count FROM payments WHERE status = 'pending'")->fetch_assoc()['count'];
-                    $overduePayments = $conn->query("SELECT COUNT(*) as count FROM payments WHERE status = 'overdue'")->fetch_assoc()['count'];
+                    $totalRevenueResult = $conn->query("SELECT SUM(amount) as total FROM payments WHERE status = 'paid'");
+    $totalRevenue = $totalRevenueResult ? $totalRevenueResult->fetch_assoc()['total'] ?? 0 : 0;
+    
+    $monthlyRevenueResult = $conn->query("SELECT SUM(amount) as total FROM payments WHERE MONTH(payment_date) = MONTH(CURRENT_DATE()) AND YEAR(payment_date) = YEAR(CURRENT_DATE()) AND status = 'paid'");
+    $monthlyRevenue = $monthlyRevenueResult ? $monthlyRevenueResult->fetch_assoc()['total'] ?? 0 : 0;
+    
+    $pendingPaymentsResult = $conn->query("SELECT COUNT(*) as count FROM payments WHERE status = 'pending'");
+    $pendingPayments = $pendingPaymentsResult ? $pendingPaymentsResult->fetch_assoc()['count'] ?? 0 : 0;
+    
+    $overduePaymentsResult = $conn->query("SELECT COUNT(*) as count FROM payments WHERE status = 'overdue'");
+    $overduePayments = $overduePaymentsResult ? $overduePaymentsResult->fetch_assoc()['count'] ?? 0 : 0;
                     ?>
                     <div class="summary-card">
                         <div class="summary-header">
@@ -609,10 +645,17 @@
                 <div class="filters">
                     <?php
                     // Get counts for each status
-                    $allCount = $conn->query("SELECT COUNT(*) as count FROM payments")->fetch_assoc()['count'];
-                    $paidCount = $conn->query("SELECT COUNT(*) as count FROM payments WHERE status = 'paid'")->fetch_assoc()['count'];
-                    $pendingCount = $conn->query("SELECT COUNT(*) as count FROM payments WHERE status = 'pending'")->fetch_assoc()['count'];
-                    $overdueCount = $conn->query("SELECT COUNT(*) as count FROM payments WHERE status = 'overdue'")->fetch_assoc()['count'];
+                    $allCountResult = $conn->query("SELECT COUNT(*) as count FROM payments");
+    $allCount = $allCountResult ? $allCountResult->fetch_assoc()['count'] ?? 0 : 0;
+    
+    $paidCountResult = $conn->query("SELECT COUNT(*) as count FROM payments WHERE status = 'paid'");
+    $paidCount = $paidCountResult ? $paidCountResult->fetch_assoc()['count'] ?? 0 : 0;
+    
+    $pendingCountResult = $conn->query("SELECT COUNT(*) as count FROM payments WHERE status = 'pending'");
+    $pendingCount = $pendingCountResult ? $pendingCountResult->fetch_assoc()['count'] ?? 0 : 0;
+    
+    $overdueCountResult = $conn->query("SELECT COUNT(*) as count FROM payments WHERE status = 'overdue'");
+    $overdueCount = $overdueCountResult ? $overdueCountResult->fetch_assoc()['count'] ?? 0 : 0;
                     ?>
                     <button class="filter-btn active" onclick="filterPayments('all')">
                         <i data-lucide="list" width="16"></i>

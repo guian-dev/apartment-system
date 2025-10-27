@@ -326,7 +326,7 @@
                     <i data-lucide="building-2" class="logo-icon"></i>
                     <div class="logo-text">
                         <h1>Kagay an View</h1>
-                        <p>Renter Portal</p>
+                        <p>Admin Panel</p>
                     </div>
                 </div>
                 <button class="toggle-btn" onclick="toggleSidebar()">
@@ -344,8 +344,8 @@
                     <span>Staff</span>
                 </a>
                 <a href="renters.php" class="nav-item active">
-                    <i data-lucide="user" width="20" height="20"></i>
-                    <span>My Account</span>
+                    <i data-lucide="users" width="20" height="20"></i>
+                    <span>Renters</span>
                 </a>
                 <a href="tenants.php" class="nav-item">
                     <i data-lucide="users" width="20" height="20"></i>
@@ -439,6 +439,68 @@
                             <h3>Contact Management</h3>
                             <p>Send messages to property management</p>
                         </div>
+                    </div>
+                </div>
+
+                <!-- Payment Modal (hidden by default) -->
+                <?php
+                // Fetch tenants and their unit numbers for the payment form
+                $tenantOptions = [];
+                $tRes = $conn->query("SELECT t.id AS tenant_id, t.name AS tenant_name, t.unit_id, u.unit_number FROM tenants t LEFT JOIN units u ON t.unit_id = u.id ORDER BY t.name");
+                if ($tRes && $tRes->num_rows > 0) {
+                    while ($tr = $tRes->fetch_assoc()) {
+                        $unitNum = $tr['unit_number'] ? $tr['unit_number'] : 'N/A';
+                        $tenantOptions[] = ['id' => $tr['tenant_id'], 'label' => $tr['tenant_name'] . ' — Unit ' . $unitNum];
+                    }
+                }
+                ?>
+
+                <div id="paymentModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); align-items:center; justify-content:center; z-index:2000;">
+                    <div style="background:white; width:520px; max-width:95%; border-radius:12px; padding:1.25rem; box-shadow:var(--shadow-lg);">
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.75rem;">
+                            <h3 style="margin:0;">Make a Payment</h3>
+                            <button onclick="closePaymentModal()" style="background:none; border:none; font-size:1.25rem; cursor:pointer;">&times;</button>
+                        </div>
+                        <form id="paymentForm">
+                            <div style="margin-bottom:0.5rem;">
+                                <label for="tenant_id">Tenant</label>
+                                <select id="tenant_id" name="tenant_id" required style="width:100%; padding:0.5rem;">
+                                    <option value="">-- Select tenant --</option>
+                                    <?php foreach ($tenantOptions as $opt): ?>
+                                        <option value="<?php echo $opt['id']; ?>"><?php echo htmlspecialchars($opt['label']); ?></option>
+                                    <?php endforeach; ?>
+                                </select>
+                            </div>
+                            <div style="display:flex; gap:0.5rem; margin-bottom:0.5rem;">
+                                <div style="flex:1;">
+                                    <label for="amount">Amount</label>
+                                    <input id="amount" name="amount" type="number" step="0.01" min="0" required style="width:100%; padding:0.5rem;" />
+                                </div>
+                                <div style="width:160px;">
+                                    <label for="payment_method">Method</label>
+                                    <select id="payment_method" name="payment_method" required style="width:100%; padding:0.5rem;">
+                                        <option value="cash">Cash</option>
+                                        <option value="bank_transfer">Bank Transfer</option>
+                                        <option value="gcash">GCash</option>
+                                        <option value="credit_card">Credit Card</option>
+                                        <option value="check">Check</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div style="margin-bottom:0.5rem;">
+                                <label for="reference_number">Reference (optional)</label>
+                                <input id="reference_number" name="reference_number" type="text" style="width:100%; padding:0.5rem;" />
+                            </div>
+                            <div style="margin-bottom:0.75rem;">
+                                <label for="notes">Notes (optional)</label>
+                                <textarea id="notes" name="notes" rows="3" style="width:100%; padding:0.5rem;"></textarea>
+                            </div>
+                            <div style="display:flex; justify-content:flex-end; gap:0.5rem;">
+                                <button type="button" onclick="closePaymentModal()" class="btn-secondary">Cancel</button>
+                                <button type="submit" class="btn-primary">Submit Payment</button>
+                            </div>
+                        </form>
+                        <div id="paymentMessage" style="margin-top:0.5rem;"></div>
                     </div>
                 </div>
 
@@ -548,8 +610,55 @@
 
         // Renter functions
         function openPaymentModal() {
-            showNotification('Payment modal would open here', 'info');
+            const modal = document.getElementById('paymentModal');
+            if (modal) {
+                modal.style.display = 'flex';
+            } else {
+                showNotification('Payment modal not available', 'error');
+            }
         }
+
+        function closePaymentModal() {
+            const modal = document.getElementById('paymentModal');
+            if (modal) modal.style.display = 'none';
+            const msg = document.getElementById('paymentMessage');
+            if (msg) msg.innerHTML = '';
+            const form = document.getElementById('paymentForm');
+            if (form) form.reset();
+        }
+
+        // Handle payment form submission
+        document.addEventListener('DOMContentLoaded', function() {
+            const paymentForm = document.getElementById('paymentForm');
+            if (paymentForm) {
+                paymentForm.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    const formData = new FormData(paymentForm);
+                    const btn = paymentForm.querySelector('button[type="submit"]');
+                    if (btn) btn.disabled = true;
+
+                    fetch('process_payment.php', {
+                        method: 'POST',
+                        body: formData
+                    })
+                    .then(r => r.json())
+                    .then(data => {
+                        const msg = document.getElementById('paymentMessage');
+                        if (data.success) {
+                            if (msg) msg.innerHTML = '<div style="color:green;">' + data.message + '</div>';
+                            setTimeout(() => { closePaymentModal(); location.reload(); }, 900);
+                        } else {
+                            if (msg) msg.innerHTML = '<div style="color:red;">' + (data.message || 'Error') + '</div>';
+                        }
+                    })
+                    .catch(err => {
+                        const msg = document.getElementById('paymentMessage');
+                        if (msg) msg.innerHTML = '<div style="color:red;">Network error</div>';
+                    })
+                    .finally(() => { if (btn) btn.disabled = false; });
+                });
+            }
+        });
 
         function openMaintenanceModal() {
             showNotification('Maintenance request modal would open here', 'info');

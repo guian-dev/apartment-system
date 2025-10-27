@@ -442,7 +442,7 @@
                     <span>Staff</span>
                 </a>
                 <a href="renters.php" class="nav-item">
-                    <i data-lucide="user" width="20" height="20"></i>
+                    <i data-lucide="users" width="20" height="20"></i>
                     <span>Renters</span>
                 </a>
                 <a href="tenants.php" class="nav-item">
@@ -511,10 +511,17 @@
                 <div class="report-stats">
                     <?php
                     // Get report statistics
-                    $totalReports = $conn->query("SELECT COUNT(*) as count FROM reports")->fetch_assoc()['count'];
-                    $thisMonthReports = $conn->query("SELECT COUNT(*) as count FROM reports WHERE MONTH(generated_date) = MONTH(CURRENT_DATE()) AND YEAR(generated_date) = YEAR(CURRENT_DATE())")->fetch_assoc()['count'];
-                    $totalRevenue = $conn->query("SELECT SUM(amount) as total FROM payments WHERE status = 'paid'")->fetch_assoc()['total'] ?? 0;
-                    $monthlyRevenue = $conn->query("SELECT SUM(amount) as total FROM payments WHERE MONTH(payment_date) = MONTH(CURRENT_DATE()) AND YEAR(payment_date) = YEAR(CURRENT_DATE()) AND status = 'paid'")->fetch_assoc()['total'] ?? 0;
+                    $totalReportsResult = $conn->query("SELECT COUNT(*) as count FROM reports");
+    $totalReports = $totalReportsResult ? $totalReportsResult->fetch_assoc()['count'] ?? 0 : 0;
+    
+    $thisMonthReportsResult = $conn->query("SELECT COUNT(*) as count FROM reports WHERE MONTH(generated_date) = MONTH(CURRENT_DATE()) AND YEAR(generated_date) = YEAR(CURRENT_DATE())");
+    $thisMonthReports = $thisMonthReportsResult ? $thisMonthReportsResult->fetch_assoc()['count'] ?? 0 : 0;
+    
+    $totalRevenueResult = $conn->query("SELECT SUM(amount) as total FROM payments WHERE status = 'paid'");
+    $totalRevenue = $totalRevenueResult ? $totalRevenueResult->fetch_assoc()['total'] ?? 0 : 0;
+    
+    $monthlyRevenueResult = $conn->query("SELECT SUM(amount) as total FROM payments WHERE MONTH(payment_date) = MONTH(CURRENT_DATE()) AND YEAR(payment_date) = YEAR(CURRENT_DATE()) AND status = 'paid'");
+    $monthlyRevenue = $monthlyRevenueResult ? $monthlyRevenueResult->fetch_assoc()['total'] ?? 0 : 0;
                     ?>
                     <div class="stat-mini">
                         <div class="value"><?php echo $totalReports; ?></div>

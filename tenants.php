@@ -383,7 +383,7 @@
                     <span>Staff</span>
                 </a>
                 <a href="renters.php" class="nav-item">
-                    <i data-lucide="user" width="20" height="20"></i>
+                    <i data-lucide="users" width="20" height="20"></i>
                     <span>Renters</span>
                 </a>
                 <a href="tenants.php" class="nav-item active">
@@ -456,10 +456,17 @@
                     <div class="filters">
                     <?php
                     // Get counts for each status
-                    $allCount = $conn->query("SELECT COUNT(*) as count FROM tenants")->fetch_assoc()['count'];
-                    $activeCount = $conn->query("SELECT COUNT(*) as count FROM tenants WHERE status = 'active'")->fetch_assoc()['count'];
-                    $pendingCount = $conn->query("SELECT COUNT(*) as count FROM tenants WHERE status = 'pending'")->fetch_assoc()['count'];
-                    $inactiveCount = $conn->query("SELECT COUNT(*) as count FROM tenants WHERE status = 'inactive'")->fetch_assoc()['count'];
+                    $allCountResult = $conn->query("SELECT COUNT(*) as count FROM tenants");
+    $allCount = $allCountResult ? $allCountResult->fetch_assoc()['count'] ?? 0 : 0;
+    
+    $activeCountResult = $conn->query("SELECT COUNT(*) as count FROM tenants WHERE status = 'active'");
+    $activeCount = $activeCountResult ? $activeCountResult->fetch_assoc()['count'] ?? 0 : 0;
+    
+    $pendingCountResult = $conn->query("SELECT COUNT(*) as count FROM tenants WHERE status = 'pending'");
+    $pendingCount = $pendingCountResult ? $pendingCountResult->fetch_assoc()['count'] ?? 0 : 0;
+    
+    $inactiveCountResult = $conn->query("SELECT COUNT(*) as count FROM tenants WHERE status = 'inactive'");
+    $inactiveCount = $inactiveCountResult ? $inactiveCountResult->fetch_assoc()['count'] ?? 0 : 0;
                     ?>
                     <button class="filter-btn active" onclick="filterTenants('all')">
                         <i data-lucide="users" width="16"></i>
