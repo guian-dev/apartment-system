@@ -1,0 +1,14 @@
+QUICK START - CUSTOMER PORTAL
+
+1. START XAMPP (Apache + MySQL)
+
+2. IMPORT DATABASE:
+   - http://localhost/phpmyadmin
+   - Import: database_setup.sql
+   - Import: customer_portal_setup.sql
+
+3. OPEN BROWSER:
+   http://localhost/apartment-system/customer.php
+
+DONE! Start browsing units.
+

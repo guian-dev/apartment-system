@@ -58,7 +58,7 @@
             <div class="sidebar-footer">
                 <a href="https://guiancarlosbuhawe-diaht.wordpress.com" target="_blank" class="nav-item">
                     <i data-lucide="home" width="20" height="20"></i>
-                    <span></span>
+                    <span>Website</span>
                 </a>
                 <a href="logout.php" class="nav-item">
                     <i data-lucide="log-out" width="20" height="20"></i>

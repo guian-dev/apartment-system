@@ -386,7 +386,11 @@
 <body>
     <!-- Customer Header -->
     <div class="customer-header">
-        <div class="container">
+        <div class="container" style="position: relative;">
+            <div style="position: absolute; top: 1rem; right: 1rem;">
+                <a href="login.php" style="color: white; text-decoration: none; margin-right: 1rem; padding: 0.5rem 1rem; border: 2px solid white; border-radius: 0.5rem; transition: all 0.2s;">Login</a>
+                <a href="register.php" style="color: white; text-decoration: none; padding: 0.5rem 1rem; background: white; color: var(--primary-color); border-radius: 0.5rem; font-weight: 600; transition: all 0.2s;">Sign Up</a>
+            </div>
             <h1>Find Your Perfect Home</h1>
             <p>Discover beautiful, modern apartments at Kagay an View. Browse our available units and find the perfect place to call home.</p>
         </div>
@@ -398,7 +402,7 @@
             <div class="search-container">
                 <div class="search-input">
                     <i data-lucide="search" class="search-icon"></i>
-                    <input type="text" placeholder="Search by unit number, bedrooms, or features..." id="unitSearch">
+                    <input type="text" placeholder="Search by unit number, location, bedrooms, or features..." id="unitSearch" onkeyup="applyFilters()">
                 </div>
                 <div class="filter-buttons">
                     <button class="filter-btn active" onclick="filterUnits('all')">
@@ -423,24 +427,91 @@
                     </button>
                 </div>
             </div>
+            
+            <!-- Advanced Filters -->
+            <div style="margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px solid var(--border-light);">
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 1rem;">
+                    <div>
+                        <label style="display: block; font-weight: 600; margin-bottom: 0.5rem; font-size: 0.875rem;">Bedrooms</label>
+                        <select id="bedroomFilter" onchange="applyFilters()" style="width: 100%; padding: 0.75rem; border: 2px solid var(--border-color); border-radius: var(--radius-lg);">
+                            <option value="all">All Bedrooms</option>
+                            <option value="0">Studio</option>
+                            <option value="1">1 Bedroom</option>
+                            <option value="2">2 Bedrooms</option>
+                            <option value="3">3+ Bedrooms</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label style="display: block; font-weight: 600; margin-bottom: 0.5rem; font-size: 0.875rem;">Price Range (₱/month)</label>
+                        <div style="display: flex; gap: 0.5rem;">
+                            <input type="number" id="priceMin" placeholder="Min" style="flex: 1; padding: 0.75rem; border: 2px solid var(--border-color); border-radius: var(--radius-lg);" onchange="applyFilters()">
+                            <input type="number" id="priceMax" placeholder="Max" style="flex: 1; padding: 0.75rem; border: 2px solid var(--border-color); border-radius: var(--radius-lg);" onchange="applyFilters()">
+                        </div>
+                    </div>
+                    <div>
+                        <label style="display: block; font-weight: 600; margin-bottom: 0.5rem; font-size: 0.875rem;">Location</label>
+                        <input type="text" id="locationFilter" placeholder="Search location..." style="width: 100%; padding: 0.75rem; border: 2px solid var(--border-color); border-radius: var(--radius-lg);" onkeyup="applyFilters()">
+                    </div>
+                </div>
+                <div style="margin-top: 1rem;">
+                    <label style="display: block; font-weight: 600; margin-bottom: 0.5rem; font-size: 0.875rem;">Amenities</label>
+                    <div class="filter-buttons" style="justify-content: flex-start;">
+                        <button class="amenity-filter-btn" data-amenity="WiFi" onclick="toggleAmenityFilter(this, 'WiFi')" style="padding: 0.5rem 1rem; border: 2px solid var(--border-color); border-radius: var(--radius-lg); background: white; cursor: pointer;">
+                            <i data-lucide="wifi" width="16"></i> Wi-Fi
+                        </button>
+                        <button class="amenity-filter-btn" data-amenity="Private Bathroom" onclick="toggleAmenityFilter(this, 'Private Bathroom')" style="padding: 0.5rem 1rem; border: 2px solid var(--border-color); border-radius: var(--radius-lg); background: white; cursor: pointer;">
+                            <i data-lucide="bath" width="16"></i> Private CR/Bathroom
+                        </button>
+                        <button class="amenity-filter-btn" data-amenity="Air Conditioning" onclick="toggleAmenityFilter(this, 'Air Conditioning')" style="padding: 0.5rem 1rem; border: 2px solid var(--border-color); border-radius: var(--radius-lg); background: white; cursor: pointer;">
+                            <i data-lucide="wind" width="16"></i> Air Conditioning
+                        </button>
+                        <button class="amenity-filter-btn" data-amenity="Parking" onclick="toggleAmenityFilter(this, 'Parking')" style="padding: 0.5rem 1rem; border: 2px solid var(--border-color); border-radius: var(--radius-lg); background: white; cursor: pointer;">
+                            <i data-lucide="car" width="16"></i> Parking
+                        </button>
+                    </div>
+                </div>
+            </div>
         </div>
 
         <!-- Units Grid -->
         <div class="units-grid" id="unitsGrid">
             <?php
-            // Get available units
-            $units = $conn->query("
-                SELECT u.*, 
-                       CASE 
-                           WHEN u.bedrooms = 0 THEN 'Studio'
-                           WHEN u.bedrooms = 1 THEN '1 Bedroom'
-                           WHEN u.bedrooms = 2 THEN '2 Bedrooms'
-                           ELSE CONCAT(u.bedrooms, '+ Bedrooms')
-                       END as bedroom_type
-                FROM units u
-                WHERE u.status = 'available'
-                ORDER BY u.unit_number
-            ");
+            // Check if unit_amenities table exists
+            $tableExists = $conn->query("SHOW TABLES LIKE 'unit_amenities'");
+            
+            // Get available units with amenities (if table exists) or without
+            if ($tableExists && $tableExists->num_rows > 0) {
+                $units = $conn->query("
+                    SELECT u.*, 
+                           CASE 
+                               WHEN u.bedrooms = 0 THEN 'Studio'
+                               WHEN u.bedrooms = 1 THEN '1 Bedroom'
+                               WHEN u.bedrooms = 2 THEN '2 Bedrooms'
+                               ELSE CONCAT(u.bedrooms, '+ Bedrooms')
+                           END as bedroom_type,
+                           GROUP_CONCAT(DISTINCT ua.amenity) as amenities
+                    FROM units u
+                    LEFT JOIN unit_amenities ua ON u.id = ua.unit_id
+                    WHERE u.status = 'available'
+                    GROUP BY u.id
+                    ORDER BY u.unit_number
+                ");
+            } else {
+                // Fallback query without amenities if table doesn't exist
+                $units = $conn->query("
+                    SELECT u.*, 
+                           CASE 
+                               WHEN u.bedrooms = 0 THEN 'Studio'
+                               WHEN u.bedrooms = 1 THEN '1 Bedroom'
+                               WHEN u.bedrooms = 2 THEN '2 Bedrooms'
+                               ELSE CONCAT(u.bedrooms, '+ Bedrooms')
+                           END as bedroom_type,
+                           NULL as amenities
+                    FROM units u
+                    WHERE u.status = 'available'
+                    ORDER BY u.unit_number
+                ");
+            }
             
             if ($units->num_rows > 0) {
                 while($unit = $units->fetch_assoc()) {
@@ -448,8 +519,18 @@
                     $bathroomText = $unit['bathrooms'] == 1 ? '1 Bathroom' : $unit['bathrooms'] . ' Bathrooms';
                     $areaText = $unit['area_sqm'] ? $unit['area_sqm'] . ' sqm' : 'N/A';
                     $rentAmount = formatCurrency($unit['monthly_rent']);
+                    $amenities = !empty($unit['amenities']) ? explode(',', $unit['amenities']) : [];
+                    $amenityIcons = [
+                        'WiFi' => 'wifi',
+                        'Air Conditioning' => 'wind',
+                        'Private Bathroom' => 'bath',
+                        'Parking' => 'car',
+                        'Balcony' => 'home'
+                    ];
                     
-                    echo "<div class='unit-card' data-bedrooms='{$unit['bedrooms']}' data-bedroom-type='{$unit['bedroom_type']}'>
+                    $location = htmlspecialchars($unit['location'] ?? 'Kagay an View, Cagayan de Oro');
+                    $capacity = $unit['capacity'] ?? 2;
+                    echo "<div class='unit-card' data-bedrooms='{$unit['bedrooms']}' data-bedroom-type='{$unit['bedroom_type']}' data-rent='{$unit['monthly_rent']}' data-location='{$location}' data-amenities='".($unit['amenities'] ?? '')."'>
                             <div class='unit-image'>
                                 <div class='unit-image-placeholder'>
                                     <i data-lucide='home' width='48' height='48'></i>
@@ -475,18 +556,38 @@
                                         <span>{$areaText}</span>
                                     </div>
                                     <div class='detail-item'>
-                                        <i data-lucide='calendar' width='16'></i>
-                                        <span>Available Now</span>
+                                        <i data-lucide='map-pin' width='16'></i>
+                                        <span>{$location}</span>
                                     </div>
-                                </div>
-                                <div class='unit-description'>
-                                    Beautiful " . strtolower($bedroomText) . " apartment with modern amenities. Perfect for professionals and families looking for comfortable living in a great location.
+                                    <div class='detail-item'>
+                                        <i data-lucide='users' width='16'></i>
+                                        <span>Up to {$capacity} people</span>
+                                    </div>
+                                </div>";
+                                
+                    if (!empty($amenities)) {
+                        echo "<div class='unit-amenities' style='display: flex; gap: 0.5rem; flex-wrap: wrap; margin: 1rem 0;'>";
+                        foreach (array_slice($amenities, 0, 4) as $amenity) {
+                            $icon = $amenityIcons[trim($amenity)] ?? 'check';
+                            echo "<span style='display: flex; align-items: center; gap: 0.25rem; padding: 0.25rem 0.5rem; background: rgba(79, 70, 229, 0.1); border-radius: 0.5rem; font-size: 0.75rem; color: var(--primary-color);'>
+                                    <i data-lucide='{$icon}' width='12'></i>
+                                    " . htmlspecialchars(trim($amenity)) . "
+                                  </span>";
+                        }
+                        if (count($amenities) > 4) {
+                            echo "<span style='font-size: 0.75rem; color: var(--text-secondary);'>+" . (count($amenities) - 4) . " more</span>";
+                        }
+                        echo "</div>";
+                    }
+                    
+                    echo "<div class='unit-description'>
+                                    " . htmlspecialchars($unit['description'] ?: 'Beautiful ' . strtolower($bedroomText) . ' apartment with modern amenities.') . "
                                 </div>
                                 <div class='unit-actions'>
-                                    <button class='btn-primary' onclick='viewUnitDetails({$unit['id']})'>
+                                    <a href='unit_details.php?id={$unit['id']}' class='btn-primary' style='text-decoration: none;'>
                                         <i data-lucide='eye' width='16'></i>
                                         View Details
-                                    </button>
+                                    </a>
                                     <button class='btn-secondary' onclick='contactUs()'>
                                         <i data-lucide='phone' width='16'></i>
                                         Contact
@@ -552,20 +653,80 @@
         // Initialize Lucide icons
         lucide.createIcons();
 
-        // Search functionality
-        document.getElementById('unitSearch').addEventListener('input', function() {
-            const searchTerm = this.value.toLowerCase();
+        // Track selected amenities
+        let selectedAmenities = [];
+        
+        // Advanced filter function
+        function applyFilters() {
+            const searchTerm = document.getElementById('unitSearch').value.toLowerCase();
+            const bedroomFilter = document.getElementById('bedroomFilter').value;
+            const priceMin = parseFloat(document.getElementById('priceMin').value) || 0;
+            const priceMax = parseFloat(document.getElementById('priceMax').value) || Infinity;
+            const locationFilter = document.getElementById('locationFilter').value.toLowerCase();
+            
             const cards = document.querySelectorAll('.unit-card');
             
             cards.forEach(card => {
-                const text = card.textContent.toLowerCase();
-                if (text.includes(searchTerm)) {
-                    card.style.display = '';
-                } else {
-                    card.style.display = 'none';
+                let show = true;
+                
+                // Text search
+                if (searchTerm) {
+                    const text = card.textContent.toLowerCase();
+                    if (!text.includes(searchTerm)) show = false;
                 }
+                
+                // Bedroom filter
+                if (show && bedroomFilter !== 'all') {
+                    const bedrooms = parseInt(card.dataset.bedrooms);
+                    if (bedroomFilter === '3' && bedrooms < 3) show = false;
+                    else if (bedroomFilter !== '3' && bedrooms !== parseInt(bedroomFilter)) show = false;
+                }
+                
+                // Price filter
+                if (show) {
+                    const rent = parseFloat(card.dataset.rent);
+                    if (rent < priceMin || rent > priceMax) show = false;
+                }
+                
+                // Location filter
+                if (show && locationFilter) {
+                    const location = (card.dataset.location || '').toLowerCase();
+                    if (!location.includes(locationFilter)) show = false;
+                }
+                
+                // Amenities filter
+                if (show && selectedAmenities.length > 0) {
+                    const amenities = (card.dataset.amenities || '').toLowerCase();
+                    const hasAllAmenities = selectedAmenities.every(amenity => 
+                        amenities.includes(amenity.toLowerCase())
+                    );
+                    if (!hasAllAmenities) show = false;
+                }
+                
+                card.style.display = show ? '' : 'none';
+                if (show) card.style.animation = 'fadeIn 0.3s ease';
             });
-        });
+        }
+        
+        // Toggle amenity filter
+        function toggleAmenityFilter(btn, amenity) {
+            btn.classList.toggle('active');
+            if (btn.classList.contains('active')) {
+                selectedAmenities.push(amenity);
+                btn.style.background = 'linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%)';
+                btn.style.color = 'white';
+                btn.style.borderColor = 'var(--primary-color)';
+            } else {
+                selectedAmenities = selectedAmenities.filter(a => a !== amenity);
+                btn.style.background = 'white';
+                btn.style.color = 'var(--text-secondary)';
+                btn.style.borderColor = 'var(--border-color)';
+            }
+            applyFilters();
+        }
+        
+        // Search functionality
+        document.getElementById('unitSearch').addEventListener('input', applyFilters);
 
         // Filter functionality
         function filterUnits(type) {

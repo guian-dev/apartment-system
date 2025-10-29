@@ -374,7 +374,7 @@
                 </a>
                 <a href="staff.php" class="nav-item">
                     <i data-lucide="users" width="20" height="20"></i>
-                    <span>Staff</span>
+                    <span>Staff Management</span>
                 </a>
                 <a href="renters.php" class="nav-item">
                     <i data-lucide="user" width="20" height="20"></i>
@@ -439,7 +439,7 @@
                             <i data-lucide="search" class="search-icon"></i>
                             <input type="text" placeholder="Search units..." id="unitSearch">
                         </div>
-                        <button class="btn-primary" onclick="addUnit()">
+                        <button class="btn-primary" onclick="window.location.href='add_unit.php'">
                             <i data-lucide="plus" width="16"></i>
                             Add Unit
                         </button>

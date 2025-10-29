@@ -1,4 +1,11 @@
-<?php include 'db.php'; ?>
+<?php 
+include 'db.php'; 
+// Simple admin access control - in production, use proper session management
+session_start();
+if (!isset($_SESSION['admin_logged_in'])) {
+    $_SESSION['admin_logged_in'] = true; // For demo purposes - replace with real auth
+}
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -121,7 +128,7 @@
                 </a>
                 <a href="staff.php" class="nav-item">
                     <i data-lucide="users" width="20" height="20"></i>
-                    <span>Staff</span>
+                    <span>Staff Management</span>
                 </a>
                 <a href="renters.php" class="nav-item">
                     <i data-lucide="users" width="20" height="20"></i>
